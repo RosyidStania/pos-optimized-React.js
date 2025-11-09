@@ -1,4 +1,4 @@
-# Laporan Praktikum 3 - Optimasi Performa React dengan Caching
+# Optimasi Performa React dengan Caching
 
 **Nama:** Rosyid Stania Ardiyan Putra 
 **NIM:** V3424075  
