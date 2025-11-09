@@ -1,16 +1,91 @@
-# React + Vite
+# Laporan Praktikum 3 - Optimasi Performa React dengan Caching
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Nama:** Rosyid Stania Ardiyan Putra 
+**NIM:** V3424075  
+**Kelas:** TIC 24  
+**Mata Kuliah:** Pemrograman Front-End
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🎯 Tujuan
+Menganalisis perbedaan performa aplikasi Point of Sales (POS) antara implementasi **tanpa cache** dan **dengan cache**, serta memahami dampak caching terhadap pengalaman pengguna.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 📋 Metodologi
+- Aplikasi digunakan: **Point of Sales** dengan **10.000 data produk**
+- Pengujian dilakukan dengan melakukan pencarian `"produk 5000"` secara berulang
+- Tools analisis:
+  - React DevTools Profiler
+  - Browser Console
+- Metrik performa:
+  - Waktu render
+  - Konsistensi respons
+  - Beban komputasi
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🔴 Versi Tanpa Cache
+
+**Karakteristik:**
+- Setiap pencarian menghitung ulang dari awal
+- Tidak ada penyimpanan hasil sebelumnya
+- Beban komputasi konsisten tinggi
+
+### 📸 Screenshot Profiling (Tanpa Cache)
+Console Log:
+![No Cache Console](./images/NoCacheConsole.png)
+
+Profiling (React Profiler):
+![No Cache Profiler](./images/NoCacheProfiler.png)
+
+**Performa:**
+| Pengujian | Waktu Render |
+|----------|-------------|
+| Pencarian Pertama | 1.0ms |
+| Pencarian Berulang | 1.0ms |
+
+---
+
+## 🟢 Versi Dengan Cache
+
+**Karakteristik:**
+- Hasil pencarian disimpan ke cache memory
+- Pencarian berulang menjadi instan
+- Beban CPU turun signifikan
+
+### 📸 Screenshot Profiling (Dengan Cache)
+Console Log:
+![Cache Console](./images/CacheConsole.png)
+
+Profiling (React Profiler):
+![Cache Profiler](./images/CacheProfiler.png)
+
+**Performa:**
+| Pengujian | Waktu Render |
+|----------|-------------|
+| Pencarian Pertama (Cache MISS) | 1.0ms |
+| Pencarian Berulang (Cache HIT) | 0.4ms |
+
+**Improvement:** **60% lebih cepat**
+
+---
+
+## 💻 Implementasi Cache
+
+```javascript
+// Cache mechanism
+const searchCache = new Map();
+const MAX_CACHE_SIZE = 50;
+
+export const getFromCache = (key) => {
+  return searchCache.get(key);
+};
+
+export const setToCache = (key, data) => {
+  if (searchCache.size >= MAX_CACHE_SIZE) {
+    const firstKey = searchCache.keys().next().value;
+    searchCache.delete(firstKey);
+  }
+  searchCache.set(key, data);
+};
